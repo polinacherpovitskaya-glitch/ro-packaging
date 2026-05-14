@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recycle Object — поставщики упаковки</title>
+<style>
+  :root {
+    --yellow: #FFE600;
+    --dark: #1a1a1a;
+    --gray: #6b6b6b;
+    --light: #f5f5f5;
+    --green: #1a7a3c;
+    --green-bg: #e6f5ec;
+    --red: #c0392b;
+    --red-bg: #fdeceb;
+    --amber-bg: #fff8e1;
+    --border: #e3e3e3;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: var(--dark);
+    background: #fafafa;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: #0066cc; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* HEADER */
+  header {
+    background: var(--dark);
+    color: #fff;
+    padding: 32px 20px 28px;
+  }
+  header .wrap { max-width: 1000px; margin: 0 auto; }
+  header h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+  header h1 .badge {
+    background: var(--yellow); color: var(--dark);
+    padding: 2px 10px; border-radius: 6px; font-size: 22px;
+  }
+  header p { color: #c9c9c9; font-size: 15px; max-width: 720px; }
+  header .stats { margin-top: 16px; display: flex; gap: 24px; flex-wrap: wrap; }
+  header .stat { font-size: 14px; }
+  header .stat b { display: block; font-size: 22px; color: var(--yellow); }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: #fff; border-bottom: 1px solid var(--border);
+    padding: 10px 20px; overflow-x: auto; white-space: nowrap;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  }
+  nav .wrap { max-width: 1000px; margin: 0 auto; }
+  nav a {
+    display: inline-block; padding: 6px 12px; margin-right: 4px;
+    font-size: 13px; color: var(--dark); border-radius: 6px;
+    background: var(--light); font-weight: 600;
+  }
+  nav a:hover { background: var(--yellow); text-decoration: none; }
+
+  /* MAIN */
+  main { max-width: 1000px; margin: 0 auto; padding: 28px 20px 60px; }
+
+  .intro {
+    background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--yellow);
+    border-radius: 8px; padding: 16px 18px; margin-bottom: 32px; font-size: 14.5px;
+  }
+  .intro b { color: var(--dark); }
+
+  /* CATEGORY */
+  .cat { margin-bottom: 44px; scroll-margin-top: 60px; }
+  .cat-num {
+    display: inline-block; background: var(--dark); color: #fff;
+    width: 28px; height: 28px; border-radius: 50%; text-align: center;
+    line-height: 28px; font-weight: 700; font-size: 15px; margin-right: 8px;
+  }
+  .cat h2 { font-size: 21px; display: inline; vertical-align: middle; }
+  .what {
+    background: var(--light); border-radius: 8px; padding: 12px 16px;
+    margin: 12px 0 16px; font-size: 14px; color: #333;
+  }
+  .what b { color: var(--dark); }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x: auto; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; background: #fff; }
+  th {
+    background: var(--dark); color: #fff; padding: 9px 12px; text-align: left;
+    font-weight: 600; white-space: nowrap;
+  }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  .win-row { background: var(--green-bg); }
+  .win-row td:first-child { font-weight: 700; }
+  .bad-row { background: var(--red-bg); color: #888; }
+  .price { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* CONTACT CARD */
+  .card {
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 10px;
+    border: 1px solid var(--border);
+  }
+  .card.win { background: var(--green-bg); border-color: #b6e0c4; }
+  .card.wait { background: var(--amber-bg); border-color: #ffe2a0; }
+  .card.reserve { background: #fff; }
+  .card .label {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .04em; margin-bottom: 4px;
+  }
+  .card.win .label { color: var(--green); }
+  .card.wait .label { color: #b8860b; }
+  .card.reserve .label { color: var(--gray); }
+  .card .name { font-size: 17px; font-weight: 800; margin-bottom: 8px; }
+  .card .contacts { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; margin-bottom: 6px; }
+  .card .contacts .item { white-space: nowrap; }
+  .card .contacts .item .ic { opacity: .6; margin-right: 3px; }
+  .card .phone a { font-weight: 700; font-size: 15px; color: var(--dark); }
+  .card .why { font-size: 13px; color: #444; margin-top: 4px; }
+  .card .why b { color: var(--dark); }
+
+  .blocked {
+    background: var(--red-bg); border: 1px solid #f0b6b0; border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 10px; font-size: 14px;
+  }
+  .blocked .label { font-size: 13px; font-weight: 800; color: var(--red); margin-bottom: 4px; }
+
+  /* TODO */
+  .todo {
+    background: var(--dark); color: #fff; border-radius: 10px;
+    padding: 20px 22px; margin-top: 36px;
+  }
+  .todo h2 { font-size: 19px; margin-bottom: 12px; }
+  .todo ul { list-style: none; }
+  .todo li { padding: 7px 0 7px 28px; position: relative; font-size: 14.5px; border-bottom: 1px solid #333; }
+  .todo li:last-child { border-bottom: none; }
+  .todo li::before {
+    content: '☐'; position: absolute; left: 0; color: var(--yellow); font-size: 17px;
+  }
+  footer { text-align: center; color: var(--gray); font-size: 12.5px; margin-top: 28px; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 21px; }
+    .cat h2 { font-size: 17px; }
+    .card .contacts { flex-direction: column; gap: 3px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1><span class="badge">📦</span> Recycle Object — поставщики упаковки</h1>
+    <p>Результат тендера: разослали запросы 217 типографиям по 8 видам упаковки, получили 89 ответов. Здесь — что за упаковка, сколько стоит у разных подрядчиков и как с ними связаться.</p>
+    <div class="stats">
+      <div class="stat"><b>217</b> типографий опрошено</div>
+      <div class="stat"><b>89</b> ответов получено</div>
+      <div class="stat"><b>8</b> видов упаковки</div>
+      <div class="stat"><b>6/8</b> категорий с финалистом</div>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="wrap">
+    <a href="#c1">1. Самосборная МГК</a>
+    <a href="#c2">2. Коробка-рукав</a>
+    <a href="#c3">3. Коробка-обложка</a>
+    <a href="#c4">4. Header card</a>
+    <a href="#c5">5. Карточка-замок</a>
+    <a href="#c6">6. PET-блистер</a>
+    <a href="#c7">7. Конверты кальки</a>
+    <a href="#c8">8. Наклейки</a>
+    <a href="#todo">✅ Что делать</a>
+  </div>
+</nav>
+
+<main>
+
+  <div class="intro">
+    <b>Как пользоваться:</b> по каждому виду упаковки есть 🟢 <b>ФИНАЛИСТ</b> (с кем рекомендуем работать) и резервы.
+    Звони по телефону из зелёной карточки, представляйся от Recycle Object — все они уже получали наш запрос и в курсе.
+    Телефоны и почты — кликабельные.
+  </div>
+
+  <!-- 1. САМОСБОРНАЯ МГК -->
+  <section class="cat" id="c1">
+    <span class="cat-num">1</span><h2>Самосборная коробка из МГК</h2>
+    <div class="what"><b>Что это:</b> коробка из микрогофрокартона (E-flute), складывается без клея, хранится плоской. Размер 100×100×50 мм. Базовая бюджетная упаковка для сувениров. Сравнивали тиражи 500–5000 шт, вариант без печати (под нашу наклейку) и с печатью логотипа.</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Поставщик</th><th>500 шт</th><th>1000 шт</th><th>3000 шт</th><th>5000 шт</th><th>Оснастка</th></tr>
+      <tr class="win-row"><td>🟢 МС-ПАК <span style="font-weight:400">(без печати)</span></td><td>—</td><td class="price">16,97 ₽</td><td class="price">10,79 ₽</td><td class="price">10,25 ₽</td><td>штамп 16 500 ₽</td></tr>
+      <tr><td>СТЭП (без печати)</td><td class="price">27 ₽</td><td class="price">22,2 ₽</td><td class="price">19,07 ₽</td><td class="price">18,18 ₽</td><td>штамп 15 000 ₽</td></tr>
+      <tr><td>Visitka.ru (печать 1 цвет)</td><td class="price">48 ₽</td><td class="price">44 ₽</td><td class="price">42 ₽</td><td class="price">39 ₽</td><td>образец 4 500 ₽</td></tr>
+    </table></div>
+    <div class="card win">
+      <div class="label">🥇 Финалист — рекомендуем</div>
+      <div class="name">МС-ПАК <span style="font-weight:400;font-size:14px;color:#666">· Мытищи</span></div>
+      <div class="contacts">
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+74951205053">+7 (495) 120-50-53</a></span>
+        <span class="item phone"><span class="ic">📱</span><a href="tel:+79251736181">8 (925) 173-61-81</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:roman.n@gofro-karton.com">roman.n@gofro-karton.com</a></span>
+        <span class="item"><span class="ic">🌐</span><a href="https://gofro-karton.com" target="_blank">gofro-karton.com</a></span>
+        <span class="item"><span class="ic">👤</span>Роман Неганов</span>
+      </div>
+      <div class="why"><b>Почему:</b> в 2 раза дешевле всех. Срок: штамп 5-6 дн + короба 6-8 дн. Образец и расчёт с печатью уже запрошены.</div>
+    </div>
+    <div class="card reserve">
+      <div class="label">📌 Резервы</div>
+      <div class="contacts">
+        <span class="item"><b>СТЭП:</b></span>
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+74956462545">+7 (495) 646-25-45</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:etiketki@bk.ru">etiketki@bk.ru</a></span>
+        <span class="item">👤 Михаил (MOQ от 500 шт)</span>
+      </div>
+      <div class="contacts" style="margin-top:4px">
+        <span class="item"><b>Visitka.ru:</b></span>
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+79775063569">+7 (977) 506-35-69</a> <span style="font-size:12px;color:#888">Telegram</span></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:zakaz@visitka.ru">zakaz@visitka.ru</a></span>
+        <span class="item">👤 Денис Гищак</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. КОРОБКА-РУКАВ -->
+  <section class="cat" id="c2">
+    <span class="cat-num">2</span><h2>Коробка-рукав (sleeve box)</h2>
+    <div class="what"><b>Что это:</b> коробка-пенал — внутренний лоток + внешняя обечайка-рукав, которая по нему скользит. Размер 100×150×30 мм. Картон + кашировка, полноцветная печать на рукаве. Средний/премиум сегмент. Цена за комплект (лоток + рукав), тиражи 300–5000 шт.</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Поставщик</th><th>300 шт</th><th>500 шт</th><th>1000 шт</th><th>3000 шт</th><th>Оснастка</th></tr>
+      <tr class="win-row"><td>🟢 Pack-Man</td><td class="price">166 ₽</td><td class="price">120 ₽</td><td class="price">81,89 ₽</td><td class="price">57,64 ₽</td><td>штамп 18 500 ₽</td></tr>
+      <tr class="win-row"><td>🟢 Тандем</td><td>—</td><td class="price">148 ₽</td><td class="price">110,22 ₽</td><td class="price">86,23 ₽</td><td>штанц 13 200 ₽</td></tr>
+      <tr><td>ПК-Книга / А-КЕМ</td><td class="price">165 ₽</td><td class="price">125 ₽</td><td class="price">99 ₽</td><td class="price">82 ₽</td><td>штамп 23 000 ₽</td></tr>
+    </table></div>
+    <div class="card win">
+      <div class="label">🥇 Финалист для тиражей 1000+</div>
+      <div class="name">Pack-Man <span style="font-weight:400;font-size:14px;color:#666">· Москва</span></div>
+      <div class="contacts">
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+74951325013">+7 (495) 132-50-13</a></span>
+        <span class="item phone"><span class="ic">📱</span><a href="tel:+79267127758">8 (926) 712-77-58</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:burceva.a@pack-man.ru">burceva.a@pack-man.ru</a></span>
+        <span class="item"><span class="ic">👤</span>Анна</span>
+      </div>
+      <div class="why"><b>Почему:</b> дешевле всех на больших тиражах (57,64 ₽ за 3000 шт). Образец бесплатно при заказе.</div>
+    </div>
+    <div class="card win">
+      <div class="label">🥇 Финалист для малых/средних</div>
+      <div class="name">Тандем / Tandem OS</div>
+      <div class="contacts">
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+79015441165">+7 (901) 544-11-65</a></span>
+        <span class="item phone"><span class="ic">📱</span><a href="tel:+79858990950">+7 (985) 899-09-50</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:tandem-os@yandex.ru">tandem-os@yandex.ru</a></span>
+        <span class="item"><span class="ic">👤</span>Дмитрий Кисточкин</span>
+      </div>
+      <div class="why"><b>Почему:</b> лучшее КП с детальной структурой себестоимости, посчитал 2 размера, дешёвый штанц 11-13к.</div>
+    </div>
+    <div class="card reserve">
+      <div class="label">📌 Резерв</div>
+      <div class="contacts">
+        <span class="item"><b>ПК-Книга / А-КЕМ:</b></span>
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+74992808011">+7 (499) 280-80-11</a></span>
+        <span class="item phone"><a href="tel:+79031939122">+7 (903) 193-91-22</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:8@a-kem.ru">8@a-kem.ru</a></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. КОРОБКА-ОБЛОЖКА -->
+  <section class="cat" id="c3">
+    <span class="cat-num">3</span><h2>Коробка-обложка из переплётного картона</h2>
+    <div class="what"><b>Что это:</b> жёсткая премиум-коробка (крышка-дно или пенал) из переплётного картона 1,5 мм + кашировка дизайнерской/мелованной бумагой. Размер 80×120×30 мм. Для PR и премиум-партий. Тиражи 100–1000 шт.</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Поставщик</th><th>100 шт</th><th>300 шт</th><th>500 шт</th><th>1000 шт</th><th>Оснастка / материал</th></tr>
+      <tr class="win-row"><td>🟢 Мастерская Труда <span style="font-weight:400">(premium)</span></td><td class="price">470 ₽</td><td class="price">345 ₽</td><td class="price">325 ₽</td><td class="price">295 ₽</td><td>4 штампа 24 000 ₽ · переплётный 1,5мм</td></tr>
+      <tr class="win-row"><td>🟢 CartonKus <span style="font-weight:400">(бюджет)</span></td><td>—</td><td>—</td><td class="price">75,8 ₽</td><td>—</td><td>ножи 5 500 ₽ · картон 300 мелов.</td></tr>
+      <tr><td>Печатер</td><td class="price">536 ₽</td><td class="price">299 ₽</td><td class="price">256 ₽</td><td class="price">193 ₽</td><td>кашированная обечайка</td></tr>
+      <tr class="bad-row"><td>❌ FastColor — дорого</td><td class="price">1163 ₽</td><td class="price">947 ₽</td><td class="price">898 ₽</td><td class="price">861 ₽</td><td>в 3-4 раза дороже всех</td></tr>
+    </table></div>
+    <div class="card win">
+      <div class="label">🥇 Финалист для premium / PR</div>
+      <div class="name">Мастерская Труда <span style="font-weight:400;font-size:14px;color:#666">· СПб</span></div>
+      <div class="contacts">
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+78123630470">+7 (812) 363-04-70</a></span>
+        <span class="item phone"><span class="ic">📱</span><a href="tel:+79045137537">+7 (904) 513-75-37</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:info@m-trud.ru">info@m-trud.ru</a></span>
+      </div>
+      <div class="why"><b>Почему:</b> настоящий переплётный 1,5мм + мелованная 170 + ламинация. Скидка при заказе до конца мая.</div>
+    </div>
+    <div class="card win">
+      <div class="label">🥇 Финалист для бюджета</div>
+      <div class="name">CartonKus <span style="font-weight:400;font-size:14px;color:#666">· СПб</span></div>
+      <div class="contacts">
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+78127038272">+7 (812) 703-82-72</a></span>
+        <span class="item phone"><span class="ic">📱</span><a href="tel:+79675902090">+7 (967) 590-20-90</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:design@cartonkus.com">design@cartonkus.com</a></span>
+        <span class="item"><span class="ic">💬</span><a href="https://t.me/cartonkus" target="_blank">@cartonkus</a></span>
+        <span class="item"><span class="ic">👤</span>Кирилл Резюков</span>
+      </div>
+      <div class="why"><b>Почему:</b> 75,8 ₽/шт — в 4-6 раз дешевле. Картон 300 мелованный (не переплётный), если premium не критичен.</div>
+    </div>
+    <div class="card reserve">
+      <div class="label">📌 Резерв</div>
+      <div class="contacts">
+        <span class="item"><b>Печатер:</b></span>
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+79037784383">+7 (903) 778-43-83</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:julia2712o@mail.ru">julia2712o@mail.ru</a></span>
+        <span class="item">👤 Юлия Опалева</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. HEADER CARD -->
+  <section class="cat" id="c4">
+    <span class="cat-num">4</span><h2>Картонная подложка / Header card</h2>
+    <div class="what"><b>Что это:</b> картонная карточка-подложка для брелоков/подвесок/медалей. Картон 350 г/м², полноцветная печать, фигурная высечка + отверстия под подвес. 3 размера: S 70×100, M 90×130, L 120×170 мм. ⚠️ Для точной цены нужна PDF-развёртка от дизайнера.</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Поставщик</th><th>300 шт</th><th>500 шт</th><th>1000 шт</th><th>5000 шт</th><th>Примечание</th></tr>
+      <tr class="win-row"><td>🟢 Печатных Дел Мастер <span style="font-weight:400">(S 70×100)</span></td><td class="price">143 ₽</td><td class="price">88 ₽</td><td class="price">47 ₽</td><td class="price">13,4 ₽</td><td>картон 350, 4+4, софттач, штамп в цене</td></tr>
+      <tr><td>Yuppieprint / Pronto Print / ГрафиксВ</td><td>—</td><td>—</td><td>—</td><td>—</td><td>ждём расчёт (выслали ТЗ)</td></tr>
+    </table></div>
+    <div class="card win">
+      <div class="label">🥇 Финалист</div>
+      <div class="name">Печатных Дел Мастер <span style="font-weight:400;font-size:14px;color:#666">· Москва</span></div>
+      <div class="contacts">
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+74952589699">+7 (495) 258-96-99</a></span>
+        <span class="item phone"><span class="ic">📱</span><a href="tel:+79165571989">8 (916) 557-19-89</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:pr@pd-master.ru">pr@pd-master.ru</a></span>
+        <span class="item"><span class="ic">👤</span>Ксения</span>
+      </div>
+      <div class="why"><b>Почему:</b> единственный с реальным расчётом. Для финальной цены нужна PDF-развёртка.</div>
+    </div>
+    <div class="card wait">
+      <div class="label">⏳ Ждём цены — рассчитывают</div>
+      <div class="contacts">
+        <span class="item"><b>Yuppieprint:</b></span>
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+74995770003">+7 (499) 577-00-03</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:info@yuppieprint.ru">info@yuppieprint.ru</a></span>
+        <span class="item">👤 Дина Богданова</span>
+      </div>
+      <div class="contacts" style="margin-top:4px">
+        <span class="item"><b>Pronto Print:</b></span>
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+78126770282">+7 (812) 677-02-82</a></span>
+        <span class="item"><span class="ic">💬</span><a href="https://t.me/prontoprint" target="_blank">@prontoprint</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:mail@prontoprint.ru">mail@prontoprint.ru</a></span>
+      </div>
+      <div class="contacts" style="margin-top:4px">
+        <span class="item"><b>ГрафиксВ:</b></span>
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+74959692700">+7 (495) 969-27-00</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:gv@grafiksv.ru">gv@grafiksv.ru</a></span>
+        <span class="item">👤 Константин Алтухов</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. КАРТОЧКА-ЗАМОК -->
+  <section class="cat" id="c5">
+    <span class="cat-num">5</span><h2>Карточка-замок с прорезью</h2>
+    <div class="what"><b>Что это:</b> две одинаковые картонные подложки с прорезью — изделие фиксируется между слоёв без клея. Для подвесок-букв и тонких тегов.</div>
+    <div class="blocked">
+      <div class="label">⛔ Цен нет — нужна развёртка</div>
+      Все поставщики (Printology, GCPrint и др.) отказываются считать без чертежа-развёртки конструкции.
+      <b>Нужно:</b> заказать развёртку у дизайнера, потом разослать и собрать цены.<br><br>
+      Контакты готовых считать:
+      <b>Printology</b> — <a href="mailto:info@printology.ru">info@printology.ru</a>, <a href="tel:+74952150983">+7 (495) 215-09-83</a> ·
+      <b>GCPrint</b> — <a href="mailto:zakaz@gcprint.ru">zakaz@gcprint.ru</a>, <a href="tel:+74957964099">+7 (495) 796-40-99</a>
+    </div>
+  </section>
+
+  <!-- 6. PET-БЛИСТЕР -->
+  <section class="cat" id="c6">
+    <span class="cat-num">6</span><h2>PET-блистер + картонная подложка</h2>
+    <div class="what"><b>Что это:</b> прозрачный пластиковый блистер (PET) + картонная подложка, приваривается по периметру (ТВЧ). Для брелоков, NFC, медалей. Тиражи 1000–3000 шт. ⚠️ Сложная категория — большинство поставщиков отказались (MOQ 10–50к).</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Поставщик</th><th>1000 шт</th><th>3000 шт</th><th>Оснастка</th></tr>
+      <tr class="win-row"><td>🟢 Эпсилон СПб</td><td class="price">52,19 ₽</td><td class="price">23,96 ₽</td><td>штамп 18,3к + ложемент 19,5к = 37,8к</td></tr>
+    </table></div>
+    <div class="card win">
+      <div class="label">🥇 Финалист — безальтернативно</div>
+      <div class="name">Эпсилон СПб</div>
+      <div class="contacts">
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+78122930437">+7 (812) 293-04-37</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:mail@epsilon-spb.ru">mail@epsilon-spb.ru</a></span>
+        <span class="item"><span class="ic">👤</span>Александр Лихтер</span>
+      </div>
+      <div class="why"><b>Почему:</b> единственный кто реально посчитал и берётся. Полный цикл: блистер + картон + приварка.</div>
+    </div>
+    <div class="card wait">
+      <div class="label">⏳ Добор</div>
+      <div class="contacts">
+        <span class="item"><b>Просервис / VIPLK:</b></span>
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+78124072940">+7 (812) 407-29-40</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:ms@viplk.ru">ms@viplk.ru</a></span>
+        <span class="item">обещали связаться, от 100 шт</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. КОНВЕРТЫ КАЛЬКИ -->
+  <section class="cat" id="c7">
+    <span class="cat-num">7</span><h2>Конверты из кальки</h2>
+    <div class="what"><b>Что это:</b> конверт из плотной полупрозрачной кальки 100×100 мм (можно 10×10 / 12×12), 93–135 г/м². Для премиум-упаковки сувениров. Тиражи 1000–5000 шт.</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Поставщик</th><th>1000 шт</th><th>Оснастка</th><th>Примечание</th></tr>
+      <tr class="win-row"><td>🟢 LupinDesign / Helmet</td><td class="price">36 ₽</td><td>вырубная форма 4 500 ₽</td><td>хранят оснастку, размеры 10×10 / 12×12</td></tr>
+      <tr><td>Ленпечати</td><td>по запросу</td><td>штамп 9 350 ₽</td><td>есть готовые штампы — экономия</td></tr>
+    </table></div>
+    <div class="card win">
+      <div class="label">🥇 Финалист</div>
+      <div class="name">LupinDesign / Helmet <span style="font-weight:400;font-size:14px;color:#666">· СПб</span></div>
+      <div class="contacts">
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+79046041707">+7 (904) 604-17-07</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:lupindesign@mail.ru">lupindesign@mail.ru</a></span>
+        <span class="item"><span class="ic">👤</span>Дарья</span>
+      </div>
+      <div class="why"><b>Почему:</b> конкретная цена 36 ₽/шт, дешёвая форма, хранят оснастку. Совет: для этого размера лучше не плотная калька 93–110 г/м².</div>
+    </div>
+    <div class="card reserve">
+      <div class="label">📌 Резерв</div>
+      <div class="contacts">
+        <span class="item"><b>Ленпечати:</b></span>
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+78123350700">+7 (812) 335-07-00</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:info@lenpechati.ru">info@lenpechati.ru</a></span>
+        <span class="item">👤 Татьяна · есть готовые штампы</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. НАКЛЕЙКИ -->
+  <section class="cat" id="c8">
+    <span class="cat-num">8</span><h2>Наклейки 50×50 мм</h2>
+    <div class="what"><b>Что это:</b> рулонные самоклеящиеся наклейки 50×50 мм (бренд-стикер на упаковку). Плёнка или бумага, полноцветная печать. Тиражи 1000–6500 шт.</div>
+    <div class="tbl-wrap"><table>
+      <tr><th>Поставщик</th><th>1000 шт</th><th>3000 шт</th><th>6500 шт</th><th>Примечание</th></tr>
+      <tr class="win-row"><td>🟢 Тавро <span style="font-weight:400">(бумага)</span></td><td class="price">3,48 ₽</td><td class="price">1,62 ₽</td><td class="price">1,26 ₽</td><td>MOQ 30 шт, срок 5-7 дн</td></tr>
+      <tr><td>Etiketki.online (бумага)</td><td class="price">4,33 ₽</td><td class="price">3,51 ₽</td><td class="price">1,99 ₽</td><td>беспл. образец, Новосибирск</td></tr>
+      <tr><td>Липкая этикетка (плёнка)</td><td class="price">7,92 ₽</td><td class="price">3,41 ₽</td><td class="price">2,19 ₽</td><td>Москва, 3-4 дня</td></tr>
+      <tr><td>DigLabel</td><td class="price">10 ₽</td><td class="price">3,92 ₽</td><td class="price">2,45 ₽</td><td>минимум 10к ₽</td></tr>
+    </table></div>
+    <div class="card win">
+      <div class="label">🥇 Финалист</div>
+      <div class="name">Тавро <span style="font-weight:400;font-size:14px;color:#666">· Москва / Коломна</span></div>
+      <div class="contacts">
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+74959810422">+7 (495) 981-04-22</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:tavrokolomna@mail.ru">tavrokolomna@mail.ru</a></span>
+        <span class="item"><span class="ic">👤</span>Елена</span>
+      </div>
+      <div class="why"><b>Почему:</b> лучшая цена (1,26 ₽/шт), минимальный тираж 30 шт. Образец уже заказан.</div>
+    </div>
+    <div class="card reserve">
+      <div class="label">📌 Резервы</div>
+      <div class="contacts">
+        <span class="item"><b>Etiketki.online:</b></span>
+        <span class="item phone"><span class="ic">☎</span><a href="tel:88002002731">8-800-200-2731</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:info@etiketki.online">info@etiketki.online</a></span>
+        <span class="item">👤 Андрей Чебатков</span>
+      </div>
+      <div class="contacts" style="margin-top:4px">
+        <span class="item"><b>Липкая этикетка:</b></span>
+        <span class="item phone"><span class="ic">☎</span><a href="tel:+79850382841">+7 (985) 038-28-41</a></span>
+        <span class="item"><span class="ic">💬</span><a href="https://t.me/etiketki_ms" target="_blank">@etiketki_ms</a></span>
+        <span class="item"><span class="ic">✉</span><a href="mailto:t@glabel.ru">t@glabel.ru</a></span>
+        <span class="item">👤 Татьяна</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TODO -->
+  <div class="todo" id="todo">
+    <h2>✅ Что делать менеджеру</h2>
+    <ul>
+      <li>Обзвонить 5 финалистов и заказать образцы: МС-ПАК, Тандем (или Pack-Man), Мастерская Труда, LupinDesign, Тавро</li>
+      <li>Заказать у дизайнера PDF-развёртку карточки-замка и header card — без неё эти 2 категории не считаются</li>
+      <li>Дождаться расчётов от Yuppieprint, Pronto Print, ГрафиксВ (header card) и Просервис VIPLK (блистер)</li>
+      <li>После образцов — выбрать по 1 подрядчику на категорию, согласовать макеты и запустить тестовые тиражи</li>
+    </ul>
+  </div>
+
+  <footer>
+    Все цены — предварительные КП по нашему ТЗ, без НДС где не указано иное. При заказе нужно согласовать макет и точные параметры.<br>
+    Полная база и переписка — в файле recycle_object_packaging_procurement_master_FINAL.xlsx · Обновлено 14.05.2026
+  </footer>
+
+</main>
+</body>
+</html>
